@@ -8,13 +8,13 @@ use std::{
 use anyhow::Error;
 use chrono::{Local, Timelike};
 use dotenvy::dotenv;
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity};
 use reqwest::{
     header::{HeaderMap, ACCEPT_ENCODING},
     Client,
 };
 use serde::{Deserialize, Serialize};
-use serenity::all::{CacheHttp, CreateEmbed, CreateMessage, Mentionable};
+use serenity::all::{CreateEmbed, CreateMessage, Mentionable};
 use tokio::time::{sleep_until, Instant};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -112,6 +112,7 @@ async fn channel(ctx: Context<'_>) -> Result<(), Error> {
         ctx.channel_id().mention()
     ))
     .await?;
+    println!("Channel set: {:?}", ctx.channel_id());
     Ok(())
 }
 
@@ -165,11 +166,7 @@ async fn registerlist(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-async fn process(
-    channel: serenity::ChannelId,
-    users: HashSet<String>,
-    cache: impl CacheHttp,
-) -> Result<(), Error> {
+async fn process(ctx: serenity::Context) -> Result<(), Error> {
     #[allow(unused)]
     #[derive(Clone, Deserialize, Debug, Default)]
     struct ProblemModelItem {
@@ -205,7 +202,7 @@ async fn process(
         point: f32,
         length: i32,
         result: String,
-        execution_time: i32,
+        execution_time: Option<i32>,
     }
 
     struct ProblemDetail {
@@ -239,6 +236,15 @@ async fn process(
     let mut headers = HeaderMap::new();
     headers.insert(ACCEPT_ENCODING, "gzip".parse().unwrap());
 
+    let data = load()?;
+    let users = data.users.lock().unwrap().clone();
+    let channel = data
+        .channel
+        .lock()
+        .unwrap()
+        .clone()
+        .expect("Channel not set");
+
     let res = client
         .get("https://kenkoooo.com/atcoder/resources/problem-models.json")
         .headers(headers.clone())
@@ -248,6 +254,7 @@ async fn process(
     // let problem_models = res.json::<HashMap<String, ProblemModelItem>>().await?;
     let problem_models =
         serde_json::from_str::<HashMap<String, ProblemModelItem>>(&res.text().await?)?;
+    println!("Problem models: {:?}", problem_models);
     let res = client
         .get("https://kenkoooo.com/atcoder/resources/problems.json")
         .headers(headers.clone())
@@ -256,9 +263,13 @@ async fn process(
         .error_for_status()?;
     // let problems = res.json::<Vec<ProblemItem>>().await?;
     let problems = serde_json::from_str::<Vec<ProblemItem>>(&res.text().await?)?;
+    println!("Problem models: {:?}", problem_models);
+    println!("Problems: {:?}", problems);
 
     let mut embeds = vec![];
     for user in users {
+        println!("Processing user: {}", user);
+
         let res = client
             .get(format!(
                 "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user={}&from_second={}",
@@ -270,6 +281,7 @@ async fn process(
             .error_for_status()?;
         // let submissions = res.json::<Vec<SubmissionItem>>().await?;
         let submissions = serde_json::from_str::<Vec<SubmissionItem>>(&res.text().await?)?;
+        println!("Submissions: {:#?}", submissions);
 
         let solved_ids = submissions
             .iter()
@@ -322,30 +334,29 @@ async fn process(
     if embeds.is_empty() {
         channel
             .send_message(
-                cache,
+                ctx,
                 CreateMessage::default().content("昨日は誰もACしませんでした。"),
             )
             .await?;
     } else {
         channel
-            .send_message(cache, CreateMessage::default().embeds(embeds))
+            .send_message(ctx, CreateMessage::default().embeds(embeds))
             .await?;
     }
 
     Ok(())
 }
 
+/// 手動で実行します。
 #[poise::command(slash_command)]
 async fn run(ctx: Context<'_>) -> Result<(), Error> {
     ctx.defer().await?;
-    let channel = (*ctx.data().channel.lock().unwrap()).expect("Channel not set");
-    let users = ctx.data().users.lock().unwrap().clone();
-    process(channel, users, ctx.http()).await?;
+    process(ctx.serenity_context().clone()).await?;
     ctx.reply("完了！").await?;
     Ok(())
 }
 
-async fn daily_job(channel: serenity::ChannelId, users: HashSet<String>, cache: impl CacheHttp) {
+async fn daily_job(ctx: serenity::Context) {
     loop {
         let now = Local::now();
         let target_time = (Local::now() + chrono::Duration::days(1))
@@ -364,14 +375,12 @@ async fn daily_job(channel: serenity::ChannelId, users: HashSet<String>, cache: 
         println!("Sleeping for {} seconds", sleep_duration.as_secs());
 
         sleep_until(Instant::now() + sleep_duration).await;
-        process(channel, users.clone(), cache.http())
-            .await
-            .expect("Failed to run daily job");
+        process(ctx.clone()).await.expect("Failed to run daily job");
     }
 }
 
 async fn event_handler(
-    ctx: serenity::Context,
+    _ctx: &serenity::Context,
     event: &serenity::FullEvent,
     _framework: poise::FrameworkContext<'_, Data, Error>,
     data: &Data,
@@ -389,11 +398,6 @@ async fn event_handler(
                 println!("Note: config.json not found, using default data");
             }
         }
-        tokio::spawn(daily_job(
-            (*data.channel.lock().unwrap()).expect(""),
-            data.users.lock().unwrap().clone(),
-            ctx.http.clone(),
-        ));
     }
     Ok(())
 }
@@ -409,13 +413,14 @@ async fn main() {
         .options(poise::FrameworkOptions {
             commands: vec![channel(), register(), unregister(), registerlist(), run()],
             event_handler: |ctx, event, framework, data| {
-                Box::pin(event_handler(ctx.clone(), event, framework, data))
+                Box::pin(event_handler(ctx, event, framework, data))
             },
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                tokio::spawn(daily_job(ctx.clone()));
                 Ok(Data::default())
             })
         })

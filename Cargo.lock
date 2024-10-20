@@ -87,11 +87,11 @@ dependencies = [
  "anyhow",
  "chrono",
  "dotenvy",
+ "openssl",
  "poise",
  "reqwest 0.12.8",
  "serde",
  "serde_json",
- "serenity",
  "tokio",
  "tokio-cron-scheduler",
 ]
@@ -239,17 +239,6 @@ dependencies = [
  "serde",
  "wasm-bindgen",
  "windows-targets 0.52.6",
-]
-
-[[package]]
-name = "command_attr"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88da8d7e9fe6f30d8e3fcf72d0f84102b49de70fece952633e8439e89bdc7631"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
 ]
 
 [[package]]
@@ -916,12 +905,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "levenshtein"
-version = "1.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db13adb97ab515a3691f56e4dbab09283d0b86cb45abd991d8634a9d6f501760"
-
-[[package]]
 name = "libc"
 version = "0.2.161"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1098,6 +1081,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 
 [[package]]
+name = "openssl-src"
+version = "300.3.1+3.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7259953d42a81bf137fbbd73bd30a8e1914d6dce43c2b90ed575783a22608b91"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "openssl-sys"
 version = "0.9.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1105,6 +1097,7 @@ checksum = "45abf306cbf99debc8195b66b7346498d7b10c210de50418b5ccd7ceba08c741"
 dependencies = [
  "cc",
  "libc",
+ "openssl-src",
  "pkg-config",
  "vcpkg",
 ]
@@ -1652,12 +1645,10 @@ dependencies = [
  "bitflags 2.6.0",
  "bytes",
  "chrono",
- "command_attr",
  "dashmap",
  "flate2",
  "futures",
  "fxhash",
- "levenshtein",
  "mime_guess",
  "parking_lot",
  "percent-encoding",
@@ -1666,7 +1657,6 @@ dependencies = [
  "serde",
  "serde_cow",
  "serde_json",
- "static_assertions",
  "time",
  "tokio",
  "tokio-tungstenite",
@@ -1674,7 +1664,6 @@ dependencies = [
  "typemap_rev",
  "typesize",
  "url",
- "uwl",
 ]
 
 [[package]]
@@ -1739,12 +1728,6 @@ name = "spin"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strsim"
@@ -2206,12 +2189,6 @@ checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
 dependencies = [
  "getrandom",
 ]
-
-[[package]]
-name = "uwl"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4bf03e0ca70d626ecc4ba6b0763b934b6f2976e8c744088bb3c1d646fbb1ad0"
 
 [[package]]
 name = "vcpkg"
