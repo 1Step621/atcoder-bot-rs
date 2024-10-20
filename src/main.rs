@@ -299,7 +299,7 @@ async fn process(
             })
             .collect::<Vec<_>>();
 
-        embeds.extend(solved_problems.windows(25).map(|problems| {
+        embeds.extend(solved_problems.chunks(25).map(|problems| {
             CreateEmbed::default()
                 .fields(problems.iter().map(|p| p.to_field()))
                 .color(Into::<u32>::into(
