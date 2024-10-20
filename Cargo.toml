@@ -1,0 +1,16 @@
+[package]
+name = "atcoder-bot-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.90"
+chrono = "0.4.38"
+dotenvy = "0.15.7"
+poise = "0.6.1"
+reqwest = { version = "0.12.8", features = ["json", "blocking", "gzip"] }
+serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.132"
+serenity = "0.12.2"
+tokio = { version = "1.40.0", features = ["rt-multi-thread"] }
+tokio-cron-scheduler = "0.13.0"
