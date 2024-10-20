@@ -54,12 +54,12 @@ impl From<Color> for u32 {
         match val {
             Color::Black => 0x000000,
             Color::Gray => 0x808080,
-            Color::Brown => 0xa52a2a,
+            Color::Brown => 0x804000,
             Color::Green => 0x008000,
-            Color::Cyan => 0x00ffff,
+            Color::Cyan => 0x00c0c0,
             Color::Blue => 0x0000ff,
-            Color::Yellow => 0xffff00,
-            Color::Orange => 0xffa500,
+            Color::Yellow => 0xc0c000,
+            Color::Orange => 0xff8000,
             Color::Red => 0xff0000,
         }
     }
