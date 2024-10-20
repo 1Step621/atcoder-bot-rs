@@ -5,7 +5,6 @@ use std::{
     time::Duration,
 };
 
-use ::serenity::all::CacheHttp;
 use anyhow::Error;
 use chrono::{Local, Timelike};
 use dotenvy::dotenv;
@@ -15,7 +14,7 @@ use reqwest::{
     Client,
 };
 use serde::{Deserialize, Serialize};
-use serenity::all::{CreateEmbed, CreateMessage, Mentionable};
+use serenity::all::{CacheHttp, CreateEmbed, CreateMessage, Mentionable};
 use tokio::time::{sleep_until, Instant};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -39,29 +38,29 @@ fn load() -> Result<Data, Error> {
 
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
 enum Color {
-    BLACK, // for unknown difficulty
-    GRAY,
-    BROWN,
-    GREEN,
-    CYAN,
-    BLUE,
-    YELLOW,
-    ORANGE,
-    RED,
+    Black, // for unknown difficulty
+    Gray,
+    Brown,
+    Green,
+    Cyan,
+    Blue,
+    Yellow,
+    Orange,
+    Red,
 }
 
 impl From<Color> for u32 {
     fn from(val: Color) -> Self {
         match val {
-            Color::BLACK => 0x000000,
-            Color::GRAY => 0x808080,
-            Color::BROWN => 0xa52a2a,
-            Color::GREEN => 0x008000,
-            Color::CYAN => 0x00ffff,
-            Color::BLUE => 0x0000ff,
-            Color::YELLOW => 0xffff00,
-            Color::ORANGE => 0xffa500,
-            Color::RED => 0xff0000,
+            Color::Black => 0x000000,
+            Color::Gray => 0x808080,
+            Color::Brown => 0xa52a2a,
+            Color::Green => 0x008000,
+            Color::Cyan => 0x00ffff,
+            Color::Blue => 0x0000ff,
+            Color::Yellow => 0xffff00,
+            Color::Orange => 0xffa500,
+            Color::Red => 0xff0000,
         }
     }
 }
@@ -69,15 +68,15 @@ impl From<Color> for u32 {
 impl From<Color> for String {
     fn from(val: Color) -> Self {
         match val {
-            Color::BLACK => unreachable!(),
-            Color::GRAY => "灰".to_string(),
-            Color::BROWN => "茶".to_string(),
-            Color::GREEN => "緑".to_string(),
-            Color::CYAN => "水".to_string(),
-            Color::BLUE => "青".to_string(),
-            Color::YELLOW => "黄".to_string(),
-            Color::ORANGE => "橙".to_string(),
-            Color::RED => "赤".to_string(),
+            Color::Black => unreachable!(),
+            Color::Gray => "灰".to_string(),
+            Color::Brown => "茶".to_string(),
+            Color::Green => "緑".to_string(),
+            Color::Cyan => "水".to_string(),
+            Color::Blue => "青".to_string(),
+            Color::Yellow => "黄".to_string(),
+            Color::Orange => "橙".to_string(),
+            Color::Red => "赤".to_string(),
         }
     }
 }
@@ -92,14 +91,14 @@ fn normalize_difficulty(difficulty: i64) -> i64 {
 
 fn difficulty_color(difficulty: i64) -> Color {
     match difficulty {
-        0..=399 => Color::GRAY,
-        400..=799 => Color::BROWN,
-        800..=1199 => Color::GREEN,
-        1200..=1599 => Color::CYAN,
-        1600..=1999 => Color::BLUE,
-        2000..=2399 => Color::YELLOW,
-        2400..=2799 => Color::ORANGE,
-        _ => Color::RED,
+        0..=399 => Color::Gray,
+        400..=799 => Color::Brown,
+        800..=1199 => Color::Green,
+        1200..=1599 => Color::Cyan,
+        1600..=1999 => Color::Blue,
+        2000..=2399 => Color::Yellow,
+        2400..=2799 => Color::Orange,
+        _ => Color::Red,
     }
 }
 
@@ -310,7 +309,7 @@ async fn process(
                             p.difficulty
                                 .map(normalize_difficulty)
                                 .map(difficulty_color)
-                                .unwrap_or(Color::BLACK)
+                                .unwrap_or(Color::Black)
                         })
                         .max()
                         .unwrap(),
@@ -337,12 +336,11 @@ async fn process(
 #[poise::command(slash_command)]
 async fn run(ctx: Context<'_>) -> Result<(), Error> {
     ctx.defer().await?;
-    let channel = ctx
+    let channel = (*ctx
         .data()
         .channel
         .lock()
-        .unwrap()
-        .clone()
+        .unwrap())
         .expect("Channel not set");
     let users = ctx.data().users.lock().unwrap().clone();
     process(channel, users, ctx.http()).await?;
@@ -358,14 +356,20 @@ async fn daily_job(channel: serenity::ChannelId, users: HashSet<String>, cache: 
             .and_then(|d| d.with_minute(0))
             .and_then(|d| d.with_second(0))
             .unwrap();
-        let sleep_duration = Duration::from_secs((target_time.timestamp() - now.timestamp()).try_into().unwrap());
+        let sleep_duration = Duration::from_secs(
+            (target_time.timestamp() - now.timestamp())
+                .try_into()
+                .unwrap(),
+        );
 
         println!("Now: {}", now);
         println!("Next run: {}", target_time);
         println!("Sleeping for {} seconds", sleep_duration.as_secs());
 
         sleep_until(Instant::now() + sleep_duration).await;
-        process(channel, users.clone(), cache.http()).await.expect("Failed to run daily job");
+        process(channel, users.clone(), cache.http())
+            .await
+            .expect("Failed to run daily job");
     }
 }
 
@@ -389,7 +393,7 @@ async fn event_handler(
             }
         }
         tokio::spawn(daily_job(
-            data.channel.lock().unwrap().clone().expect(""),
+            (*data.channel.lock().unwrap()).expect(""),
             data.users.lock().unwrap().clone(),
             ctx.http.clone(),
         ));
