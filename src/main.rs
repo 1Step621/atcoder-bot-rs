@@ -292,8 +292,8 @@ async fn process(
                     difficulty: problem_model.difficulty,
                     language: submission.language.clone(),
                     submission_url: format!(
-                        "https://atcoder.jp/contests/{}/submissions?f.User={}",
-                        problem.contest_id, user
+                        "https://atcoder.jp/contests/{}/submissions/{}",
+                        problem.contest_id, submission.id
                     ),
                 }
             })
@@ -301,6 +301,8 @@ async fn process(
 
         embeds.extend(solved_problems.chunks(25).map(|problems| {
             CreateEmbed::default()
+                .title(format!("{} さんが昨日ACした問題", user))
+                .url(format!("https://atcoder.jp/users/{}", user))
                 .fields(problems.iter().map(|p| p.to_field()))
                 .color(Into::<u32>::into(
                     problems
@@ -336,12 +338,7 @@ async fn process(
 #[poise::command(slash_command)]
 async fn run(ctx: Context<'_>) -> Result<(), Error> {
     ctx.defer().await?;
-    let channel = (*ctx
-        .data()
-        .channel
-        .lock()
-        .unwrap())
-        .expect("Channel not set");
+    let channel = (*ctx.data().channel.lock().unwrap()).expect("Channel not set");
     let users = ctx.data().users.lock().unwrap().clone();
     process(channel, users, ctx.http()).await?;
     ctx.reply("完了！").await?;
