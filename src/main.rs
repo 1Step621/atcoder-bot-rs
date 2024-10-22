@@ -221,7 +221,7 @@ async fn process(ctx: serenity::Context) -> Result<(), Error> {
                     self.difficulty
                         .map(|d| {
                             let diff = normalize_difficulty(d);
-                            format!("{}({})", diff, Into::<String>::into(difficulty_color(diff)))
+                            format!("{}({})", diff, String::from(difficulty_color(diff)))
                         })
                         .unwrap_or("不明".into()),
                     self.language,
@@ -316,7 +316,7 @@ async fn process(ctx: serenity::Context) -> Result<(), Error> {
                 .title(format!("{} さんが昨日ACした問題", user))
                 .url(format!("https://atcoder.jp/users/{}", user))
                 .fields(problems.iter().map(|p| p.to_field()))
-                .color(Into::<u32>::into(
+                .color(u32::from(
                     problems
                         .iter()
                         .map(|p| {
