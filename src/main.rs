@@ -81,24 +81,24 @@ impl From<Color> for String {
     }
 }
 
-fn normalize_difficulty(difficulty: i64) -> i64 {
+fn normalize_difficulty(difficulty: isize) -> usize {
     if difficulty >= 400 {
-        difficulty
+        difficulty as usize
     } else {
-        (400.0 / (1.0 + (1.0 - difficulty as f64 / 400.0).exp())) as i64
+        (400.0 / (1.0 + (1.0 - difficulty as f64 / 400.0).exp())) as usize
     }
 }
 
-fn difficulty_color(difficulty: i64) -> Color {
+fn difficulty_color(difficulty: usize) -> Color {
     match difficulty {
-        0..=399 => Color::Gray,
-        400..=799 => Color::Brown,
-        800..=1199 => Color::Green,
-        1200..=1599 => Color::Cyan,
-        1600..=1999 => Color::Blue,
-        2000..=2399 => Color::Yellow,
-        2400..=2799 => Color::Orange,
-        _ => Color::Red,
+        0..400 => Color::Gray,
+        400..800 => Color::Brown,
+        800..1200 => Color::Green,
+        1200..1600 => Color::Cyan,
+        1600..2000 => Color::Blue,
+        2000..2400 => Color::Yellow,
+        2400..2800 => Color::Orange,
+        2800.. => Color::Red,
     }
 }
 
@@ -173,10 +173,10 @@ async fn process(ctx: serenity::Context) -> Result<(), Error> {
         slope: Option<f64>,
         intercept: Option<f64>,
         variance: Option<f64>,
-        difficulty: Option<i64>,
+        difficulty: Option<isize>,
         discrimination: Option<f64>,
         irt_loglikelihood: Option<f64>,
-        irt_users: Option<i64>,
+        irt_users: Option<isize>,
         is_experimental: Option<bool>,
     }
 
@@ -193,21 +193,21 @@ async fn process(ctx: serenity::Context) -> Result<(), Error> {
     #[allow(unused)]
     #[derive(Deserialize, Debug)]
     struct SubmissionItem {
-        id: i64,
-        epoch_second: i64,
+        id: isize,
+        epoch_second: isize,
         problem_id: String,
         contest_id: String,
         user_id: String,
         language: String,
-        point: f32,
-        length: i32,
+        point: f64,
+        length: isize,
         result: String,
-        execution_time: Option<i32>,
+        execution_time: Option<isize>,
     }
 
     struct ProblemDetail {
         title: String,
-        difficulty: Option<i64>,
+        difficulty: Option<isize>,
         language: String,
         submission_url: String,
     }
