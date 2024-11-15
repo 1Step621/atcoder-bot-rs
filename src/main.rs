@@ -1,18 +1,14 @@
-use std::{
-    collections::BTreeSet,
-    fs,
-    sync::Mutex,
-};
+use std::{collections::BTreeSet, fs, sync::Mutex};
 
 use anyhow::Error;
 use dotenvy::dotenv;
 use poise::serenity_prelude as serenity;
 use serde::{Deserialize, Serialize};
 
-mod difficulty;
 mod commands;
-mod notify;
 mod daily_job;
+mod difficulty;
+mod notify;
 
 type Context<'a> = poise::Context<'a, Data, Error>;
 

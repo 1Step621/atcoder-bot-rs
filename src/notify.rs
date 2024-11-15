@@ -109,12 +109,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
 
     let data = load()?;
     let users = data.users.lock().unwrap().clone();
-    let channel = data
-        .channel
-        .lock()
-        .unwrap()
-        .clone()
-        .context("Channel not set")?;
+    let channel = (*data.channel.lock().unwrap()).context("Channel not set")?;
 
     let problem_models: HashMap<String, ProblemModelItem> =
         http_get("https://kenkoooo.com/atcoder/resources/problem-models.json").await?;

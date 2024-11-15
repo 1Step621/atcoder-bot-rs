@@ -1,4 +1,3 @@
-
 #[derive(PartialEq, PartialOrd, Eq, Ord)]
 pub enum Color {
     Black, // for unknown difficulty

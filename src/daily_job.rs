@@ -9,11 +9,7 @@ pub async fn run(ctx: serenity::Context) {
         let target_time = (Local::now() + Duration::days(1))
             .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
             .unwrap();
-        let sleep_duration = Duration::seconds(
-            (target_time.timestamp() - now.timestamp())
-                .try_into()
-                .unwrap(),
-        );
+        let sleep_duration = Duration::seconds(target_time.timestamp() - now.timestamp());
 
         println!("Now: {}", now);
         println!("Next run: {}", target_time);
