@@ -44,23 +44,25 @@ impl From<Color> for String {
     }
 }
 
+impl From<usize> for Color {
+    fn from(val: usize) -> Self {
+        match val {
+            0..400 => Color::Gray,
+            400..800 => Color::Brown,
+            800..1200 => Color::Green,
+            1200..1600 => Color::Cyan,
+            1600..2000 => Color::Blue,
+            2000..2400 => Color::Yellow,
+            2400..2800 => Color::Orange,
+            2800.. => Color::Red,
+        }
+    }
+}
+
 pub fn normalize(difficulty: isize) -> usize {
     if difficulty >= 400 {
         difficulty as usize
     } else {
         (400.0 / (1.0 + (1.0 - difficulty as f64 / 400.0).exp())) as usize
-    }
-}
-
-pub fn color(difficulty: usize) -> Color {
-    match difficulty {
-        0..400 => Color::Gray,
-        400..800 => Color::Brown,
-        800..1200 => Color::Green,
-        1200..1600 => Color::Cyan,
-        1600..2000 => Color::Blue,
-        2000..2400 => Color::Yellow,
-        2400..2800 => Color::Orange,
-        2800.. => Color::Red,
     }
 }

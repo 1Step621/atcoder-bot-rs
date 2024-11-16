@@ -81,7 +81,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
                     self.difficulty
                         .map(|d| {
                             let diff = difficulty::normalize(d);
-                            format!("{}({})", diff, String::from(difficulty::color(diff)))
+                            format!("{}({})", diff, String::from(difficulty::Color::from(diff)))
                         })
                         .unwrap_or("不明".into()),
                     self.language,
@@ -170,7 +170,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
                         .map(|p| {
                             p.difficulty
                                 .map(difficulty::normalize)
-                                .map(difficulty::color)
+                                .map(difficulty::Color::from)
                                 .unwrap_or(difficulty::Color::Black)
                         })
                         .max()
