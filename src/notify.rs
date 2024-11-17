@@ -127,26 +127,23 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
         );
         let submissions: Vec<SubmissionItem> = http_get(&submissions_url).await?;
 
-        let solved_ids = submissions
+        let accept_submissions = submissions
             .iter()
             .filter(|s| s.result == JudgeStatus::Ac)
-            .map(|s| s.problem_id.clone())
             .collect::<Vec<_>>();
 
-        let solved_problems = solved_ids
+        let accept_details = accept_submissions
             .iter()
-            .map(|id| {
-                let problem_model = problem_models.get(id).cloned().unwrap_or_default();
-                let problem = problems
-                    .iter()
-                    .find(|p| p.id == *id)
+            .map(|submission| {
+                let problem_model = problem_models
+                    .get(&submission.problem_id)
                     .cloned()
                     .unwrap_or_default();
-                let submission = submissions
+                let problem = problems
                     .iter()
-                    .find(|s| s.problem_id == *id)
+                    .find(|p| p.id == submission.problem_id)
                     .cloned()
-                    .unwrap();
+                    .unwrap_or_default();
                 ProblemDetail {
                     title: problem.title.clone(),
                     difficulty: problem_model.difficulty,
@@ -159,13 +156,13 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
             })
             .collect::<Vec<_>>();
 
-        embeds.extend(solved_problems.chunks(25).map(|problems| {
+        embeds.extend(accept_details.chunks(25).map(|accepts| {
             CreateEmbed::default()
                 .title(format!("{} さんが昨日ACした問題", user))
                 .url(format!("https://atcoder.jp/users/{}", user))
-                .fields(problems.iter().map(|p| p.to_field()))
+                .fields(accepts.iter().map(|p| p.to_field()))
                 .color(u32::from(
-                    problems
+                    accepts
                         .iter()
                         .map(|p| {
                             p.difficulty
