@@ -1,4 +1,4 @@
 /target
 /.env
 /config.json
-/restart.sh
+/update.sh
