@@ -1,4 +1,6 @@
-#[derive(PartialEq, PartialOrd, Eq, Ord)]
+use std::fmt::Display;
+
+#[derive(PartialEq, PartialOrd, Eq, Ord, Clone, Copy)]
 pub enum Color {
     Black, // for unknown difficulty
     Gray,
@@ -41,6 +43,12 @@ impl From<Color> for String {
             Color::Red => "赤",
         }
         .to_string()
+    }
+}
+
+impl Display for Color {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", String::from(*self))
     }
 }
 
