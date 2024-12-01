@@ -77,7 +77,7 @@ async fn main() {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                tokio::spawn(daily_job::run(ctx.clone()));
+                tokio::spawn(daily_job::wait(ctx.clone()));
                 Ok(Data::default())
             })
         })
