@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{difficulty, load};
 use anyhow::{Context, Error};
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, NaiveTime};
 use poise::serenity_prelude as serenity;
 use reqwest::{
     header::{HeaderMap, ACCEPT_ENCODING},
@@ -18,10 +18,10 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
         slope: Option<f64>,
         intercept: Option<f64>,
         variance: Option<f64>,
-        difficulty: Option<isize>,
+        difficulty: Option<i64>,
         discrimination: Option<f64>,
         irt_loglikelihood: Option<f64>,
-        irt_users: Option<isize>,
+        irt_users: Option<i64>,
         is_experimental: Option<bool>,
     }
 
@@ -53,21 +53,21 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
     #[allow(unused)]
     #[derive(Clone, Deserialize, Debug)]
     struct SubmissionItem {
-        id: isize,
-        epoch_second: isize,
+        id: i64,
+        epoch_second: i64,
         problem_id: String,
         contest_id: String,
         user_id: String,
         language: String,
         point: f64,
-        length: isize,
+        length: i64,
         result: JudgeStatus,
-        execution_time: Option<isize>,
+        execution_time: Option<i64>,
     }
 
     struct ProblemDetail {
         title: String,
-        difficulty: Option<isize>,
+        difficulty: Option<i64>,
         language: String,
         submission_url: String,
     }
@@ -120,15 +120,23 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
     for user in users {
         println!("Processing user: {}", user);
 
+        let from = (Local::now() - Duration::days(1))
+            .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+            .unwrap();
+        let to = Local::now()
+            .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+            .unwrap();
+
         let submissions_url = format!(
             "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user={}&from_second={}",
             user,
-            (Local::now() - Duration::days(1)).timestamp()
+            from.timestamp()
         );
         let submissions: Vec<SubmissionItem> = http_get(&submissions_url).await?;
 
         let accept_submissions = submissions
             .iter()
+            .filter(|&s| s.epoch_second < to.timestamp())
             .filter(|s| s.result == JudgeStatus::Ac)
             .collect::<Vec<_>>();
 

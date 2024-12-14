@@ -52,8 +52,8 @@ impl Display for Color {
     }
 }
 
-impl From<usize> for Color {
-    fn from(val: usize) -> Self {
+impl From<u32> for Color {
+    fn from(val: u32) -> Self {
         match val {
             0..400 => Color::Gray,
             400..800 => Color::Brown,
@@ -67,10 +67,10 @@ impl From<usize> for Color {
     }
 }
 
-pub fn normalize(difficulty: isize) -> usize {
+pub fn normalize(difficulty: i64) -> u32 {
     if difficulty >= 400 {
-        difficulty as usize
+        difficulty as u32
     } else {
-        (400.0 / (1.0 + (1.0 - difficulty as f64 / 400.0).exp())) as usize
+        (400.0 / (1.0 + (1.0 - difficulty as f64 / 400.0).exp())) as u32
     }
 }
