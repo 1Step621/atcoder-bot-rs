@@ -158,7 +158,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
                     language: submission.language.clone(),
                     submission_url: format!(
                         "https://atcoder.jp/contests/{}/submissions/{}",
-                        problem.contest_id, submission.id
+                        submission.contest_id, submission.id
                     ),
                 }
             })
