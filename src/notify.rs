@@ -187,14 +187,19 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
     if embeds.is_empty() {
         channel
             .send_message(
-                ctx,
+                &ctx,
                 CreateMessage::default().content("昨日は誰もACしませんでした。"),
             )
             .await?;
     } else {
-        channel
-            .send_message(ctx, CreateMessage::default().embeds(embeds))
-            .await?;
+        for embeds in embeds.chunks(10) {
+            channel
+                .send_message(
+                    &ctx,
+                    CreateMessage::default().embeds(embeds.to_vec()),
+                )
+                .await?;
+        }
     }
 
     Ok(())
