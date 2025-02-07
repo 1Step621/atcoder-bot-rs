@@ -22,6 +22,9 @@ jobs:
       - name: Build
         run: cargo build --release
 
+      - name: Rename binary
+        run: mv ./target/x86_64-unknown-linux-musl/release/atcoder-bot-rs ./atcoder-bot-rs-new
+
       - name: Send to server
         uses: appleboy/scp-action@master
         with:
@@ -30,7 +33,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           port: ${{ secrets.PORT }}
-          source: ./target/x86_64-unknown-linux-musl/release/atcoder-bot-rs
+          source: ./atcoder-bot-rs-new
           target: ~/atcoder-bot-rs
           overwrite: true
 
@@ -44,6 +47,8 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd atcoder-bot-rs
+            rm atcoder-bot-rs
+            mv atcoder-bot-rs-new atcoder-bot-rs
             ./kill.sh
             ./run.sh
             ps ux | grep bot | grep -v grep | grep -v bash
