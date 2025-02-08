@@ -36,18 +36,27 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
     }
 
     #[derive(Clone, Deserialize, Debug, PartialEq)]
-    #[serde(rename_all = "UPPERCASE")]
     enum JudgeStatus {
-        Ce,
-        Mle,
-        Tle,
-        Re,
-        Ole,
-        Ie,
-        Wa,
-        Ac,
-        Wj,
-        Wr,
+        #[serde(rename = "CE")]
+        CompilationError,
+        #[serde(rename = "MLE")]
+        MemoryLimitExceeded,
+        #[serde(rename = "TLE")]
+        TimeLimitExceeded,
+        #[serde(rename = "RE")]
+        RuntimeError,
+        #[serde(rename = "OLE")]
+        OutputLimitExceeded,
+        #[serde(rename = "IE")]
+        InternalError,
+        #[serde(rename = "WA")]
+        WrongAnswer,
+        #[serde(rename = "AC")]
+        Accepted,
+        #[serde(rename = "WJ")]
+        WaitingForJudging,
+        #[serde(rename = "WR")]
+        WaitingForReJudging,
     }
 
     #[allow(unused)]
@@ -137,7 +146,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
         let accept_submissions = submissions
             .iter()
             .filter(|&s| s.epoch_second < to.timestamp())
-            .filter(|s| s.result == JudgeStatus::Ac)
+            .filter(|s| s.result == JudgeStatus::Accepted)
             .collect::<Vec<_>>();
 
         let accept_details = accept_submissions
