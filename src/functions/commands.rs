@@ -6,17 +6,21 @@ use serenity::Mentionable;
 
 /// メッセージを送信するチャンネルを設定します。
 #[poise::command(slash_command)]
-pub async fn channel(ctx: Context<'_>) -> Result<(), Error> {
+pub async fn channel(
+    ctx: Context<'_>,
+    #[description = "メッセージを送信するチャンネル"] channel: Option<serenity::Channel>,
+) -> Result<(), Error> {
+    let channel_id = channel.map(|c| c.id()).unwrap_or(ctx.channel_id());
     {
-        ctx.data().channel.lock().unwrap().replace(ctx.channel_id());
+        ctx.data().channel.lock().unwrap().replace(channel_id);
         save(ctx.data())?;
     }
     ctx.reply(format!(
         "チャンネルを {} に設定しました。",
-        ctx.channel_id().mention()
+        channel_id.mention()
     ))
     .await?;
-    println!("Channel set: {:?}", ctx.channel_id());
+    println!("Channel set: {:?}", channel_id);
     Ok(())
 }
 

@@ -5,9 +5,8 @@ use dotenvy::dotenv;
 use poise::serenity_prelude as serenity;
 use serde::{Deserialize, Serialize};
 
-mod commands;
-mod daily_job;
-mod difficulty;
+mod functions;
+mod api_parsing;
 mod notify;
 
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -55,6 +54,8 @@ async fn event_handler(
 
 #[tokio::main]
 async fn main() {
+    use functions::*;
+    
     dotenv().expect(".env file not found");
 
     let token = std::env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
@@ -77,7 +78,7 @@ async fn main() {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                tokio::spawn(daily_job::wait(ctx.clone()));
+                tokio::spawn(periodic::wait(ctx.clone()));
                 Ok(Data::default())
             })
         })

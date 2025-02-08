@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::{difficulty, load};
+use crate::{
+    api_parsing::{difficulty, types::*},
+    load,
+};
 use anyhow::{Context, Error};
 use chrono::{Duration, Local, NaiveTime};
 use poise::serenity_prelude as serenity;
@@ -12,68 +15,6 @@ use serde::Deserialize;
 use serenity::{CreateEmbed, CreateMessage};
 
 pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
-    #[allow(unused)]
-    #[derive(Clone, Deserialize, Debug, Default)]
-    struct ProblemModelItem {
-        slope: Option<f64>,
-        intercept: Option<f64>,
-        variance: Option<f64>,
-        difficulty: Option<i64>,
-        discrimination: Option<f64>,
-        irt_loglikelihood: Option<f64>,
-        irt_users: Option<i64>,
-        is_experimental: Option<bool>,
-    }
-
-    #[allow(unused)]
-    #[derive(Clone, Deserialize, Debug, Default)]
-    struct ProblemItem {
-        id: String,
-        contest_id: String,
-        problem_index: String,
-        name: String,
-        title: String,
-    }
-
-    #[derive(Clone, Deserialize, Debug, PartialEq)]
-    enum JudgeStatus {
-        #[serde(rename = "CE")]
-        CompilationError,
-        #[serde(rename = "MLE")]
-        MemoryLimitExceeded,
-        #[serde(rename = "TLE")]
-        TimeLimitExceeded,
-        #[serde(rename = "RE")]
-        RuntimeError,
-        #[serde(rename = "OLE")]
-        OutputLimitExceeded,
-        #[serde(rename = "IE")]
-        InternalError,
-        #[serde(rename = "WA")]
-        WrongAnswer,
-        #[serde(rename = "AC")]
-        Accepted,
-        #[serde(rename = "WJ")]
-        WaitingForJudging,
-        #[serde(rename = "WR")]
-        WaitingForReJudging,
-    }
-
-    #[allow(unused)]
-    #[derive(Clone, Deserialize, Debug)]
-    struct SubmissionItem {
-        id: i64,
-        epoch_second: i64,
-        problem_id: String,
-        contest_id: String,
-        user_id: String,
-        language: String,
-        point: f64,
-        length: i64,
-        result: JudgeStatus,
-        execution_time: Option<i64>,
-    }
-
     struct ProblemDetail {
         title: String,
         difficulty: Option<i64>,
@@ -203,10 +144,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
     } else {
         for embeds in embeds.chunks(10) {
             channel
-                .send_message(
-                    &ctx,
-                    CreateMessage::default().embeds(embeds.to_vec()),
-                )
+                .send_message(&ctx, CreateMessage::default().embeds(embeds.to_vec()))
                 .await?;
         }
     }
