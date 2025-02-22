@@ -4,16 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.90"
-chrono = "0.4.38"
+anyhow = "1.0.96"
+chrono = "0.4.39"
 dotenvy = "0.15.7"
-itertools = "0.13.0"
+itertools = "0.14.0"
 poise = "0.6.1"
-reqwest = { version = "0.12.8", features = ["json", "blocking", "gzip"] }
-serde = { version = "1.0.210", features = ["derive"] }
-serde_json = "1.0.132"
-tokio = { version = "1.40.0", features = ["rt-multi-thread"] }
+reqwest = { version = "0.12.12", features = ["json", "blocking", "gzip"] }
+serde = { version = "1.0.218", features = ["derive"] }
+serde_json = "1.0.139"
+tokio = { version = "1.43.0", features = ["rt-multi-thread"] }
 
 [dependencies.openssl]
-version = "0.10.68"
+version = "0.10.71"
 features = ["vendored"]
