@@ -71,8 +71,8 @@ async fn event_handler(
             Ok(restore) => {
                 *data.channel.lock().unwrap() = *restore.channel.lock().unwrap();
                 *data.users.lock().unwrap() = restore.users.lock().unwrap().clone();
-                println!("Config restored:");
-                println!("{:#?}", data);
+                *data.contest_kind.lock().unwrap() = restore.contest_kind.lock().unwrap().clone();
+                *data.mention.lock().unwrap() = *restore.mention.lock().unwrap();
             }
             Err(_) => {
                 println!("Note: config.json not found, using default data");
@@ -101,7 +101,7 @@ async fn main() {
                 commands::run(),
                 commands::enable_contest_notification(),
                 commands::disable_contest_notification(),
-                commands::set_mention()
+                commands::set_mention(),
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))

@@ -51,7 +51,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
             let channel = (*data.channel.lock().unwrap())
                 .context("Channel not set")
                 .unwrap();
-            let mention = data.mention.lock().unwrap().clone();
+            let mention = *data.mention.lock().unwrap();
 
             let embed = CreateEmbed::default()
                 .title(format!("まもなく{}が始まります！", contest.name))
@@ -68,10 +68,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 .send_message(
                     ctx,
                     CreateMessage::default()
-                        .content(format!(
-                            "{}",
-                            mention.map_or("".to_string(), |m| m.mention().to_string())
-                        ))
+                        .content(mention.map_or("".to_string(), |m| m.mention().to_string()))
                         .embed(embed),
                 )
                 .await
