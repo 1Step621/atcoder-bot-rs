@@ -117,7 +117,7 @@ pub async fn disable_contest_notification(
 
 /// コンテスト通知の際にメンションするロールを設定します。
 #[poise::command(slash_command)]
-pub async fn mention(
+pub async fn set_mention(
     ctx: Context<'_>,
     #[description = "メンションするロール"] role: Option<serenity::Role>,
 ) -> Result<(), Error> {

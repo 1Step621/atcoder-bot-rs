@@ -101,6 +101,7 @@ async fn main() {
                 commands::run(),
                 commands::enable_contest_notification(),
                 commands::disable_contest_notification(),
+                commands::set_mention()
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
