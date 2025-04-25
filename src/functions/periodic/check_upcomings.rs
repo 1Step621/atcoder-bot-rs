@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context as _, Error};
-use chrono::{Duration, Utc};
+use chrono::{Duration, NaiveTime, Utc};
 use poise::serenity_prelude::{self as serenity, Color, CreateEmbed, CreateMessage, Mentionable};
 use tokio::time::{Instant, sleep_until};
 
@@ -18,6 +18,9 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
         .await?;
     let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
 
+    let next_run = (Utc::now() + Duration::days(1))
+        .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+        .unwrap();
     let contests = contests
         .into_iter()
         .filter(|contest| {
@@ -31,7 +34,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 })
                 .any(|f| f(&contest.name))
         })
-        .filter(|contest| contest.start_time < Utc::now() + Duration::days(1))
+        .filter(|contest| contest.start_time < next_run)
         .collect::<Vec<_>>();
 
     let ctx = Arc::new(ctx.clone());
