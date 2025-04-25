@@ -36,6 +36,10 @@ pub fn start_waiting(ctx: serenity::Context) {
 
     tokio::spawn(async move {
         loop {
+            check_upcomings::check_upcomings(&ctx_upcoming)
+                .await
+                .expect("Failed to run check_upcomings");
+
             let now = Utc::now();
             let target_time = {
                 let res = Utc::now()
@@ -54,9 +58,6 @@ pub fn start_waiting(ctx: serenity::Context) {
             println!("Sleeping for {} seconds", sleep_duration.num_seconds());
 
             sleep_until(Instant::now() + sleep_duration.to_std().unwrap()).await;
-            check_upcomings::check_upcomings(&ctx_upcoming)
-                .await
-                .expect("Failed to run check_upcomings");
         }
     });
 }
