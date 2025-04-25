@@ -8,13 +8,13 @@ use anyhow::{Context, Error};
 use chrono::{Duration, Local, NaiveTime};
 use poise::serenity_prelude as serenity;
 use reqwest::{
-    header::{HeaderMap, ACCEPT_ENCODING},
     Client,
+    header::{ACCEPT_ENCODING, HeaderMap},
 };
 use serde::Deserialize;
 use serenity::{CreateEmbed, CreateMessage};
 
-pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
+pub async fn list_submission(ctx: &serenity::Context) -> Result<(), Error> {
     struct ProblemDetail {
         title: String,
         difficulty: Option<i64>,
@@ -42,6 +42,10 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
         }
     }
 
+    let data = load()?;
+    let users = data.users.lock().unwrap().clone();
+    let channel = (*data.channel.lock().unwrap()).context("Channel not set")?;
+
     async fn http_get<T: for<'de> Deserialize<'de>>(url: &str) -> Result<T, Error> {
         let client = Client::new();
         let mut headers = HeaderMap::new();
@@ -56,10 +60,6 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
             .await?;
         Ok(serde_json::from_str::<T>(&res)?)
     }
-
-    let data = load()?;
-    let users = data.users.lock().unwrap().clone();
-    let channel = (*data.channel.lock().unwrap()).context("Channel not set")?;
 
     let problem_models: HashMap<String, ProblemModelItem> =
         http_get("https://kenkoooo.com/atcoder/resources/problem-models.json").await?;
@@ -87,7 +87,7 @@ pub async fn notify(ctx: serenity::Context) -> Result<(), Error> {
         let accept_submissions = submissions
             .iter()
             .filter(|&s| s.epoch_second < to.timestamp())
-            .filter(|s| s.result == JudgeStatus::Accepted)
+            .filter(|s| s.result == "AC")
             .collect::<Vec<_>>();
 
         let accept_details = accept_submissions

@@ -1,5 +1,5 @@
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
-
 
 #[allow(unused)]
 #[derive(Clone, Deserialize, Debug, Default)]
@@ -24,30 +24,6 @@ pub struct ProblemItem {
     pub title: String,
 }
 
-#[derive(Clone, Deserialize, Debug, PartialEq)]
-pub enum JudgeStatus {
-    #[serde(rename = "CE")]
-    CompilationError,
-    #[serde(rename = "MLE")]
-    MemoryLimitExceeded,
-    #[serde(rename = "TLE")]
-    TimeLimitExceeded,
-    #[serde(rename = "RE")]
-    RuntimeError,
-    #[serde(rename = "OLE")]
-    OutputLimitExceeded,
-    #[serde(rename = "IE")]
-    InternalError,
-    #[serde(rename = "WA")]
-    WrongAnswer,
-    #[serde(rename = "AC")]
-    Accepted,
-    #[serde(rename = "WJ")]
-    WaitingForJudging,
-    #[serde(rename = "WR")]
-    WaitingForReJudging,
-}
-
 #[allow(unused)]
 #[derive(Clone, Deserialize, Debug)]
 pub struct SubmissionItem {
@@ -59,6 +35,16 @@ pub struct SubmissionItem {
     pub language: String,
     pub point: f64,
     pub length: i64,
-    pub result: JudgeStatus,
+    pub result: String,
     pub execution_time: Option<i64>,
+}
+
+#[allow(unused)]
+#[derive(Clone, Deserialize, Debug)]
+pub struct ContestItem {
+    pub start_time: DateTime<Utc>,
+    pub name: String,
+    pub duration: u32,
+    pub rated_range: String,
+    pub url: String,
 }

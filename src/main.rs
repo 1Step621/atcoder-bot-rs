@@ -1,20 +1,50 @@
-use std::{collections::BTreeSet, fs, sync::Mutex};
+use std::{collections::BTreeSet, fmt::Display, fs, sync::Mutex};
 
 use anyhow::Error;
 use dotenvy::dotenv;
-use poise::serenity_prelude as serenity;
+use poise::{ChoiceParameter, serenity_prelude as serenity};
 use serde::{Deserialize, Serialize};
 
-mod functions;
 mod api_parsing;
-mod notify;
+mod functions;
 
 type Context<'a> = poise::Context<'a, Data, Error>;
+
+#[derive(
+    Clone, Copy, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord, ChoiceParameter,
+)]
+enum WellKnownContest {
+    #[name = "ABC"]
+    Abc,
+    #[name = "ARC"]
+    Arc,
+    #[name = "AGC"]
+    Agc,
+    #[name = "AHC"]
+    Ahc,
+}
+
+impl Display for WellKnownContest {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Abc => "ABC",
+                Self::Arc => "ARC",
+                Self::Agc => "AGC",
+                Self::Ahc => "AHC",
+            }
+        )
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct Data {
     channel: Mutex<Option<serenity::ChannelId>>,
     users: Mutex<BTreeSet<String>>,
+    contest_kind: Mutex<BTreeSet<WellKnownContest>>,
+    mention: Mutex<Option<serenity::RoleId>>,
 }
 
 fn save(data: &Data) -> Result<(), Error> {
@@ -25,7 +55,7 @@ fn save(data: &Data) -> Result<(), Error> {
 
 fn load() -> Result<Data, Error> {
     let data = fs::read_to_string("config.json")?;
-    let data = serde_json::from_str(&data)?;
+    let data = serde_json::from_str(&data).expect("Failed to parse config.json");
     Ok(data)
 }
 
@@ -55,7 +85,7 @@ async fn event_handler(
 #[tokio::main]
 async fn main() {
     use functions::*;
-    
+
     dotenv().expect(".env file not found");
 
     let token = std::env::var("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN");
@@ -69,6 +99,8 @@ async fn main() {
                 commands::unregister(),
                 commands::registerlist(),
                 commands::run(),
+                commands::enable_contest_notification(),
+                commands::disable_contest_notification(),
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
@@ -78,7 +110,7 @@ async fn main() {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                tokio::spawn(periodic::wait(ctx.clone()));
+                periodic::start_waiting(ctx.clone());
                 Ok(Data::default())
             })
         })
