@@ -70,7 +70,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 .field(
                     "開始時刻",
                     format!(
-                        "<t:{timestamp}:D>(<t:{timestamp}:R>)",
+                        "<t:{timestamp}:F>(<t:{timestamp}:R>)",
                         timestamp = contest.start_time.timestamp()
                     ),
                     false,
