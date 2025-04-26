@@ -26,6 +26,9 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
     let next_run = (Utc::now() + Duration::days(1))
         .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
         .unwrap();
+
+    const NOTIFICATION_BEFORE: Duration = Duration::minutes(5);
+
     let contests = contests
         .into_iter()
         .filter(|contest| {
@@ -39,14 +42,17 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 })
                 .any(|f| f(&contest.name))
         })
-        .filter(|contest| Utc::now() <= contest.start_time && contest.start_time < next_run)
+        .filter(|contest| {
+            Utc::now() <= contest.start_time - NOTIFICATION_BEFORE
+                && contest.start_time - NOTIFICATION_BEFORE < next_run
+        })
         .collect::<Vec<_>>();
 
     let ctx = Arc::new(ctx.clone());
     for contest in contests {
         let ctx = ctx.clone();
         let h = tokio::spawn(async move {
-            let sleep_duration = contest.start_time - Utc::now();
+            let sleep_duration = contest.start_time - NOTIFICATION_BEFORE - Utc::now();
             println!("Spawned thread for contest: {}", contest.name);
             println!("Waiting for {} seconds", sleep_duration.num_seconds());
 
