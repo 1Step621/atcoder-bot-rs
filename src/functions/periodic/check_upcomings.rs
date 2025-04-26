@@ -13,19 +13,12 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
     let data = load()?;
     let contest_notification = data.contest_kind.lock().unwrap().clone();
 
-    // let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
-    //     .await?
-    //     .error_for_status()?
-    //     .text()
-    //     .await?;
-    // let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
-    let contests = vec![ContestItem {
-        name: "AtCoder Beginner Contest 334".to_string(),
-        start_time: Utc::now() + Duration::minutes(6),
-        duration: 100,
-        rated_range: "All".to_string(),
-        url: "https://atcoder.jp/contests/abc334".to_string(),
-    }];
+    let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
+    let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
 
     let next_run = (Utc::now() + Duration::days(1))
         .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
