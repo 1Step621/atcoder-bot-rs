@@ -1,4 +1,8 @@
-use crate::{Context, WellKnownContest, functions::periodic::list_submission, save};
+use crate::{
+    Context, WellKnownContest,
+    functions::periodic::{check_upcomings, list_submission},
+    save,
+};
 use anyhow::Error;
 use itertools::Itertools;
 use poise::serenity_prelude as serenity;
@@ -89,12 +93,19 @@ pub async fn enable_contest_notification(
 ) -> Result<(), Error> {
     {
         ctx.data().contest_kind.lock().unwrap().insert(kind);
+        ctx.data()
+            .contest_threads
+            .lock()
+            .unwrap()
+            .iter()
+            .for_each(|h| h.abort());
         save(ctx.data())?;
     }
     ctx.reply(format!("{}のコンテスト通知を設定しました。", kind))
         .await?;
-
     println!("Contest notification set: {:?}", kind);
+
+    check_upcomings::check_upcomings(ctx.serenity_context()).await?;
     Ok(())
 }
 
@@ -106,12 +117,19 @@ pub async fn disable_contest_notification(
 ) -> Result<(), Error> {
     {
         ctx.data().contest_kind.lock().unwrap().remove(&kind);
+        ctx.data()
+            .contest_threads
+            .lock()
+            .unwrap()
+            .iter()
+            .for_each(|h| h.abort());
         save(ctx.data())?;
     }
     ctx.reply(format!("{}のコンテスト通知を解除しました。", kind))
         .await?;
-
     println!("Contest notification disabled: {:?}", kind);
+
+    check_upcomings::check_upcomings(ctx.serenity_context()).await?;
     Ok(())
 }
 

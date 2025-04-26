@@ -4,6 +4,7 @@ use anyhow::Error;
 use dotenvy::dotenv;
 use poise::{ChoiceParameter, serenity_prelude as serenity};
 use serde::{Deserialize, Serialize};
+use tokio::task::JoinHandle;
 
 mod api_parsing;
 mod functions;
@@ -45,6 +46,8 @@ struct Data {
     users: Mutex<BTreeSet<String>>,
     contest_kind: Mutex<BTreeSet<WellKnownContest>>,
     mention: Mutex<Option<serenity::RoleId>>,
+    #[serde(skip)]
+    contest_threads: Mutex<Vec<JoinHandle<()>>>,
 }
 
 fn save(data: &Data) -> Result<(), Error> {

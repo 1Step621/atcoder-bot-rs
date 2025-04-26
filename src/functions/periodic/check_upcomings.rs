@@ -5,11 +5,16 @@ use chrono::{Duration, NaiveTime, Utc};
 use poise::serenity_prelude::{self as serenity, Color, CreateEmbed, CreateMessage, Mentionable};
 use tokio::time::{Instant, sleep_until};
 
-use crate::{WellKnownContest, api_parsing::types::ContestItem, load};
+use crate::{WellKnownContest, api_parsing::types::ContestItem, load, save};
 
 pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
     let data = load()?;
     let contest_notification = data.contest_kind.lock().unwrap().clone();
+
+    data.contest_threads
+        .lock()
+        .unwrap()
+        .retain(|h| h.is_finished());
 
     let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
         .await?
@@ -40,7 +45,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
     let ctx = Arc::new(ctx.clone());
     for contest in contests {
         let ctx = ctx.clone();
-        tokio::spawn(async move {
+        let h = tokio::spawn(async move {
             let sleep_duration = contest.start_time - Utc::now();
             println!("Spawned thread for contest: {}", contest.name);
             println!("Waiting for {} seconds", sleep_duration.num_seconds());
@@ -74,7 +79,11 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 .await
                 .unwrap();
         });
+
+        data.contest_threads.lock().unwrap().push(h);
     }
+
+    save(&data)?;
 
     Ok(())
 }
