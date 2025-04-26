@@ -34,7 +34,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 })
                 .any(|f| f(&contest.name))
         })
-        .filter(|contest| contest.start_time < next_run)
+        .filter(|contest| Utc::now() <= contest.start_time && contest.start_time < next_run)
         .collect::<Vec<_>>();
 
     let ctx = Arc::new(ctx.clone());
