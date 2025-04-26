@@ -61,12 +61,16 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
             let embed = CreateEmbed::default()
                 .title(format!("まもなく{}が始まります！", contest.name))
                 .url(&contest.url)
-                .description(format!(
-                    "開始時刻: {}\n時間: {}\nレーティング変化: {}",
-                    contest.start_time,
-                    Duration::minutes(contest.duration.into()),
-                    contest.rated_range
-                ))
+                .field(
+                    "開始時刻",
+                    format!(
+                        "<t:{timestamp}:D>(<t:{timestamp}:R>)",
+                        timestamp = contest.start_time.timestamp()
+                    ),
+                    false,
+                )
+                .field("時間", format!("{}分", contest.duration), false)
+                .field("レーティング変化", contest.rated_range, false)
                 .color(Color::DARK_GREEN);
 
             channel
