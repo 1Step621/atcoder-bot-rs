@@ -8,20 +8,24 @@ use tokio::time::{Instant, sleep_until};
 use crate::{WellKnownContest, api_parsing::types::ContestItem, load, save};
 
 pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
+    println!("Checking upcoming contests...");
+
     let data = load()?;
     let contest_notification = data.contest_kind.lock().unwrap().clone();
 
-    data.contest_threads
-        .lock()
-        .unwrap()
-        .retain(|h| h.is_finished());
-
-    let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
-        .await?
-        .error_for_status()?
-        .text()
-        .await?;
-    let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
+    // let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
+    //     .await?
+    //     .error_for_status()?
+    //     .text()
+    //     .await?;
+    // let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
+    let contests = vec![ContestItem {
+        name: "AtCoder Beginner Contest 334".to_string(),
+        start_time: Utc::now() + Duration::minutes(6),
+        duration: 100,
+        rated_range: "All".to_string(),
+        url: "https://atcoder.jp/contests/abc334".to_string(),
+    }];
 
     let next_run = (Utc::now() + Duration::days(1))
         .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
@@ -49,13 +53,21 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
         .collect::<Vec<_>>();
 
     let ctx = Arc::new(ctx.clone());
+
     for contest in contests {
         let ctx = ctx.clone();
-        let h = tokio::spawn(async move {
-            let sleep_duration = contest.start_time - NOTIFICATION_BEFORE - Utc::now();
-            println!("Spawned thread for contest: {}", contest.name);
-            println!("Waiting for {} seconds", sleep_duration.num_seconds());
 
+        tokio::spawn(async move {
+            println!("Spawned thread for contest: {}", contest.name);
+
+            let sleep_duration = contest.start_time - NOTIFICATION_BEFORE - Utc::now();
+            println!(
+                "{} starts at {} ({}), waiting for {} seconds",
+                contest.name,
+                contest.start_time,
+                contest.start_time - NOTIFICATION_BEFORE,
+                sleep_duration.num_seconds()
+            );
             sleep_until(Instant::now() + sleep_duration.to_std().unwrap()).await;
 
             let data = load().unwrap();
@@ -89,8 +101,6 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 .await
                 .unwrap();
         });
-
-        data.contest_threads.lock().unwrap().push(h);
     }
 
     save(&data)?;

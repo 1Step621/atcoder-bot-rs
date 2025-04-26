@@ -15,6 +15,8 @@ use serde::Deserialize;
 use serenity::{CreateEmbed, CreateMessage};
 
 pub async fn list_submission(ctx: &serenity::Context) -> Result<(), Error> {
+    println!("Listing submissions...");
+
     struct ProblemDetail {
         title: String,
         difficulty: Option<i64>,

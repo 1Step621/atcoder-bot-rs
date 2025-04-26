@@ -23,9 +23,12 @@ pub fn start_waiting(ctx: serenity::Context) {
             };
             let sleep_duration = target_time - now;
 
-            println!("Now: {}", now);
-            println!("Next run: {}", target_time);
-            println!("Sleeping for {} seconds", sleep_duration.num_seconds());
+            println!("[list_submission] Now: {}", now);
+            println!("[list_submission] Next run: {}", target_time);
+            println!(
+                "[list_submission] Sleeping for {} seconds",
+                sleep_duration.num_seconds()
+            );
 
             sleep_until(Instant::now() + sleep_duration.to_std().unwrap()).await;
             list_submission::list_submission(&ctx_notify)
@@ -53,9 +56,12 @@ pub fn start_waiting(ctx: serenity::Context) {
             };
             let sleep_duration = target_time - now;
 
-            println!("Now: {}", now);
-            println!("Next run: {}", target_time);
-            println!("Sleeping for {} seconds", sleep_duration.num_seconds());
+            println!("[check_upcomings] Now: {}", now);
+            println!("[check_upcomings] Next run: {}", target_time);
+            println!(
+                "[check_upcomings] Sleeping for {} seconds",
+                sleep_duration.num_seconds()
+            );
 
             sleep_until(Instant::now() + sleep_duration.to_std().unwrap()).await;
         }
