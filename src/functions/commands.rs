@@ -1,14 +1,13 @@
-use crate::{Context, WellKnownContest, functions::periodic::list_submission, save};
+use crate::{PoiseContext, WellKnownContest, functions::periodic::list_submission, save};
 use anyhow::Error;
 use itertools::Itertools;
-use poise::serenity_prelude as serenity;
-use serenity::Mentionable;
+use poise::serenity_prelude::*;
 
 /// メッセージを送信するチャンネルを設定します。
 #[poise::command(slash_command)]
 pub async fn channel(
-    ctx: Context<'_>,
-    #[description = "メッセージを送信するチャンネル"] channel: Option<serenity::Channel>,
+    ctx: PoiseContext<'_>,
+    #[description = "メッセージを送信するチャンネル"] channel: Option<Channel>,
 ) -> Result<(), Error> {
     let channel_id = channel.map(|c| c.id()).unwrap_or(ctx.channel_id());
     {
@@ -27,7 +26,7 @@ pub async fn channel(
 /// AtCoderのユーザーを登録します。カンマ区切りで複数人指定できます。
 #[poise::command(slash_command)]
 pub async fn register(
-    ctx: Context<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "AtCoderのユーザー名"] users: String,
 ) -> Result<(), Error> {
     let users = users
@@ -47,7 +46,7 @@ pub async fn register(
 /// AtCoderのユーザーを登録解除します。
 #[poise::command(slash_command)]
 pub async fn unregister(
-    ctx: Context<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "AtCoderのユーザー名"] user: String,
 ) -> Result<(), Error> {
     {
@@ -62,7 +61,7 @@ pub async fn unregister(
 
 /// 登録されているユーザーの一覧を表示します。
 #[poise::command(slash_command)]
-pub async fn registerlist(ctx: Context<'_>) -> Result<(), Error> {
+pub async fn registerlist(ctx: PoiseContext<'_>) -> Result<(), Error> {
     let users = ctx.data().users.lock().unwrap().clone();
     ctx.reply(format!(
         "登録されているユーザー: {}",
@@ -74,7 +73,7 @@ pub async fn registerlist(ctx: Context<'_>) -> Result<(), Error> {
 
 /// 手動で実行します。
 #[poise::command(slash_command)]
-pub async fn run(ctx: Context<'_>) -> Result<(), Error> {
+pub async fn run(ctx: PoiseContext<'_>) -> Result<(), Error> {
     ctx.defer().await?;
     list_submission::list_submission(ctx.serenity_context()).await?;
     ctx.reply("完了！").await?;
@@ -84,7 +83,7 @@ pub async fn run(ctx: Context<'_>) -> Result<(), Error> {
 /// コンテスト通知を設定します。
 #[poise::command(slash_command)]
 pub async fn enable_contest_notification(
-    ctx: Context<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "コンテストの種類"] kind: WellKnownContest,
 ) -> Result<(), Error> {
     {
@@ -103,7 +102,7 @@ pub async fn enable_contest_notification(
 /// コンテスト通知を解除します。
 #[poise::command(slash_command)]
 pub async fn disable_contest_notification(
-    ctx: Context<'_>,
+    ctx: PoiseContext<'_>,
     #[description = "コンテストの種類"] kind: WellKnownContest,
 ) -> Result<(), Error> {
     {
@@ -122,8 +121,8 @@ pub async fn disable_contest_notification(
 /// コンテスト通知の際にメンションするロールを設定します。
 #[poise::command(slash_command)]
 pub async fn set_mention(
-    ctx: Context<'_>,
-    #[description = "メンションするロール"] role: Option<serenity::Role>,
+    ctx: PoiseContext<'_>,
+    #[description = "メンションするロール"] role: Option<Role>,
 ) -> Result<(), Error> {
     let role_id = role.map(|r| r.id);
     {

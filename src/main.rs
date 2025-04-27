@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 mod api_parsing;
 mod functions;
 
-type Context<'a> = poise::Context<'a, Data, Error>;
+type PoiseContext<'a> = poise::Context<'a, Data, Error>;
 
 #[derive(
     Clone, Copy, Serialize, Deserialize, Debug, PartialEq, PartialOrd, Eq, Ord, ChoiceParameter,

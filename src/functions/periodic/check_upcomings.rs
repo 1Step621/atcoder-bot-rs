@@ -2,16 +2,16 @@ use std::sync::Arc;
 
 use anyhow::{Context as _, Error};
 use chrono::{Duration, NaiveTime, Utc};
-use poise::serenity_prelude::{self as serenity, Color, CreateEmbed, CreateMessage, Mentionable};
+use poise::serenity_prelude::*;
 use tokio::time::{Instant, sleep_until};
 
-use crate::{WellKnownContest, api_parsing::types::ContestItem, load, save};
+use crate::{WellKnownContest, api_parsing::types::ContestItem, load};
 
-pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
+pub async fn check_upcomings(ctx: &Context) -> Result<(), Error> {
     println!("Checking upcoming contests...");
 
     let data = load()?;
-    let contest_notification = data.contest_kind.lock().unwrap().clone();
+    let contest_kind = data.contest_kind.lock().unwrap().clone();
 
     let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
         .await?
@@ -29,7 +29,7 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
     let contests = contests
         .into_iter()
         .filter(|contest| {
-            contest_notification
+            contest_kind
                 .iter()
                 .map(|&c| match c {
                     WellKnownContest::Abc => |s: &String| s.contains("AtCoder Beginner Contest"),
@@ -95,8 +95,6 @@ pub async fn check_upcomings(ctx: &serenity::Context) -> Result<(), Error> {
                 .unwrap();
         });
     }
-
-    save(&data)?;
 
     Ok(())
 }

@@ -1,10 +1,10 @@
 use chrono::{Duration, Local, NaiveTime, Utc};
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::*;
 use tokio::time::{Instant, sleep_until};
 
 use crate::functions::periodic::{check_upcomings, list_submission};
 
-pub fn start_waiting(ctx: serenity::Context) {
+pub fn start_waiting(ctx: Context) {
     let ctx_notify = ctx.clone();
     let ctx_upcoming = ctx.clone();
 

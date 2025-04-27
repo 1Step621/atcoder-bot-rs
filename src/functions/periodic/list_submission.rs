@@ -4,17 +4,16 @@ use crate::{
     api_parsing::{difficulty, types::*},
     load,
 };
-use anyhow::{Context, Error};
+use anyhow::{Context as _, Error};
 use chrono::{Duration, Local, NaiveTime};
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::*;
 use reqwest::{
     Client,
     header::{ACCEPT_ENCODING, HeaderMap},
 };
 use serde::Deserialize;
-use serenity::{CreateEmbed, CreateMessage};
 
-pub async fn list_submission(ctx: &serenity::Context) -> Result<(), Error> {
+pub async fn list_submission(ctx: &Context) -> Result<(), Error> {
     println!("Listing submissions...");
 
     struct ProblemDetail {
