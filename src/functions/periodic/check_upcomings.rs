@@ -81,7 +81,11 @@ pub async fn check_upcomings(ctx: &Context) -> Result<(), Error> {
                     false,
                 )
                 .field("時間", format!("{}分", contest.duration), false)
-                .field("レーティング変化", contest.rated_range, false)
+                .field(
+                    "レーティング変化",
+                    contest.rated_range.replace("-", r"\-"),
+                    false,
+                )
                 .color(Color::DARK_GREEN);
 
             channel
