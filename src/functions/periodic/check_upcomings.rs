@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::{Context as _, Error};
-use chrono::{Duration, NaiveTime, Utc};
+use chrono::{Duration, Timelike, Utc};
 use poise::serenity_prelude::*;
 use tokio::time::{Instant, sleep_until};
 
@@ -13,16 +13,26 @@ pub async fn check_upcomings(ctx: &Context) -> Result<(), Error> {
     let data = load()?;
     let contest_kind = data.contest_kind.lock().unwrap().clone();
 
-    let contests = reqwest::get("https://atcoder-upcoming-contests-cs7x.shuttle.app/")
+    let contests = reqwest::get("https://atcoder-upcoming-contests.onrender.com/")
         .await?
         .error_for_status()?
         .text()
         .await?;
     let contests: Vec<ContestItem> = serde_json::from_str(&contests)?;
 
-    let next_run = (Utc::now() + Duration::days(1))
-        .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
-        .unwrap();
+    let now = Utc::now();
+    let next_run = {
+        let mut res = Utc::now()
+            .with_minute(0)
+            .and_then(|t| t.with_second(0))
+            .and_then(|t| t.with_nanosecond(0))
+            .unwrap();
+        while res <= now {
+            res += Duration::minutes(10);
+        }
+        res
+    };
+    let current_run = next_run - Duration::minutes(10);
 
     const NOTIFICATION_BEFORE: Duration = Duration::minutes(5);
 
@@ -40,7 +50,7 @@ pub async fn check_upcomings(ctx: &Context) -> Result<(), Error> {
                 .any(|f| f(&contest.name))
         })
         .filter(|contest| {
-            Utc::now() <= contest.start_time - NOTIFICATION_BEFORE
+            current_run <= contest.start_time - NOTIFICATION_BEFORE
                 && contest.start_time - NOTIFICATION_BEFORE < next_run
         })
         .collect::<Vec<_>>();

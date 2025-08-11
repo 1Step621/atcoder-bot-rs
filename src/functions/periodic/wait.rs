@@ -1,4 +1,4 @@
-use chrono::{Duration, Local, NaiveTime, Utc};
+use chrono::{Duration, Local, NaiveTime, Timelike, Utc};
 use poise::serenity_prelude::*;
 use tokio::time::{Instant, sleep_until};
 
@@ -45,14 +45,15 @@ pub fn start_waiting(ctx: Context) {
 
             let now = Utc::now();
             let target_time = {
-                let res = Utc::now()
-                    .with_time(NaiveTime::from_hms_opt(0, 0, 0).unwrap())
+                let mut res = Utc::now()
+                    .with_minute(0)
+                    .and_then(|t| t.with_second(0))
+                    .and_then(|t| t.with_nanosecond(0))
                     .unwrap();
-                if res < now {
-                    res + Duration::days(1)
-                } else {
-                    res
+                while res < now {
+                    res += Duration::minutes(10);
                 }
+                res
             };
             let sleep_duration = target_time - now;
 
