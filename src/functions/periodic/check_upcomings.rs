@@ -74,7 +74,7 @@ pub async fn check_upcomings(ctx: &Context) -> Result<(), Error> {
             sleep_until(Instant::now() + sleep_duration.to_std().unwrap()).await;
 
             let data = load().unwrap();
-            let channel = (*data.channel.lock().unwrap())
+            let channel = (*data.contests_channel.lock().unwrap())
                 .context("Channel not set")
                 .unwrap();
             let mention = *data.mention.lock().unwrap();

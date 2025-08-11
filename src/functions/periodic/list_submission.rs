@@ -45,7 +45,7 @@ pub async fn list_submission(ctx: &Context) -> Result<(), Error> {
 
     let data = load()?;
     let users = data.users.lock().unwrap().clone();
-    let channel = (*data.channel.lock().unwrap()).context("Channel not set")?;
+    let channel = (*data.submissions_channel.lock().unwrap()).context("Channel not set")?;
 
     async fn http_get<T: for<'de> Deserialize<'de>>(url: &str) -> Result<T, Error> {
         let client = Client::new();

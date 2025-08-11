@@ -3,23 +3,51 @@ use anyhow::Error;
 use itertools::Itertools;
 use poise::serenity_prelude::*;
 
-/// メッセージを送信するチャンネルを設定します。
+/// 提出メッセージを送信するチャンネルを設定します。
 #[poise::command(slash_command)]
-pub async fn channel(
+pub async fn set_submissions_channel(
     ctx: PoiseContext<'_>,
-    #[description = "メッセージを送信するチャンネル"] channel: Option<Channel>,
+    #[description = "提出メッセージを送信するチャンネル"] channel: Option<Channel>,
 ) -> Result<(), Error> {
     let channel_id = channel.map(|c| c.id()).unwrap_or(ctx.channel_id());
     {
-        ctx.data().channel.lock().unwrap().replace(channel_id);
+        ctx.data()
+            .submissions_channel
+            .lock()
+            .unwrap()
+            .replace(channel_id);
         save(ctx.data())?;
     }
     ctx.reply(format!(
-        "チャンネルを {} に設定しました。",
+        "提出メッセージチャンネルを {} に設定しました。",
         channel_id.mention()
     ))
     .await?;
-    println!("Channel set: {:?}", channel_id);
+    println!("Submissions channel set: {:?}", channel_id);
+    Ok(())
+}
+
+/// コンテスト通知メッセージを送信するチャンネルを設定します。
+#[poise::command(slash_command)]
+pub async fn set_contests_channel(
+    ctx: PoiseContext<'_>,
+    #[description = "コンテスト通知メッセージを送信するチャンネル"] channel: Option<Channel>,
+) -> Result<(), Error> {
+    let channel_id = channel.map(|c| c.id()).unwrap_or(ctx.channel_id());
+    {
+        ctx.data()
+            .contests_channel
+            .lock()
+            .unwrap()
+            .replace(channel_id);
+        save(ctx.data())?;
+    }
+    ctx.reply(format!(
+        "コンテスト通知チャンネルを {} に設定しました。",
+        channel_id.mention()
+    ))
+    .await?;
+    println!("Contests channel set: {:?}", channel_id);
     Ok(())
 }
 
@@ -61,7 +89,7 @@ pub async fn unregister(
 
 /// 登録されているユーザーの一覧を表示します。
 #[poise::command(slash_command)]
-pub async fn registerlist(ctx: PoiseContext<'_>) -> Result<(), Error> {
+pub async fn register_list(ctx: PoiseContext<'_>) -> Result<(), Error> {
     let users = ctx.data().users.lock().unwrap().clone();
     ctx.reply(format!(
         "登録されているユーザー: {}",

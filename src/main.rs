@@ -41,10 +41,11 @@ impl Display for WellKnownContest {
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct Data {
-    channel: Mutex<Option<serenity::ChannelId>>,
     users: Mutex<BTreeSet<String>>,
-    contest_kind: Mutex<BTreeSet<WellKnownContest>>,
+    submissions_channel: Mutex<Option<serenity::ChannelId>>,
     mention: Mutex<Option<serenity::RoleId>>,
+    contest_kind: Mutex<BTreeSet<WellKnownContest>>,
+    contests_channel: Mutex<Option<serenity::ChannelId>>,
 }
 
 fn save(data: &Data) -> Result<(), Error> {
@@ -69,10 +70,12 @@ async fn event_handler(
         println!("Logged in as {}", data_about_bot.user.name);
         match load() {
             Ok(restore) => {
-                *data.channel.lock().unwrap() = *restore.channel.lock().unwrap();
+                *data.submissions_channel.lock().unwrap() =
+                    *restore.submissions_channel.lock().unwrap();
                 *data.users.lock().unwrap() = restore.users.lock().unwrap().clone();
                 *data.contest_kind.lock().unwrap() = restore.contest_kind.lock().unwrap().clone();
                 *data.mention.lock().unwrap() = *restore.mention.lock().unwrap();
+                *data.contests_channel.lock().unwrap() = *restore.contests_channel.lock().unwrap();
             }
             Err(_) => {
                 println!("Note: config.json not found, using default data");
@@ -94,10 +97,11 @@ async fn main() {
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             commands: vec![
-                commands::channel(),
+                commands::set_submissions_channel(),
+                commands::set_contests_channel(),
                 commands::register(),
                 commands::unregister(),
-                commands::registerlist(),
+                commands::register_list(),
                 commands::run(),
                 commands::enable_contest_notification(),
                 commands::disable_contest_notification(),
